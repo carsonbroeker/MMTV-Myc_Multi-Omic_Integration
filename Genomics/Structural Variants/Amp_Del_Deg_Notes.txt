@@ -1,0 +1,5 @@
+"Amp_Del_Deg" refers to amplified/deleted as determined by whole genome sequencing data and differentially expressed between histological subtypes as determined by transcriptomic data.
+
+The "Amp_Del_Deg_COSMIC" file also limits this list to genes that are known to be involved in cancer determined by the COSMIC Cancer Gene Census (CGC) (https://cancer.sanger.ac.uk/census).
+
+The Human Homologs document shows where the homologous genes of the Mouse Amp_Del_Deg genes are located in humans. 

@@ -1,0 +1,19 @@
+#Many of the steps in this script are included in the "cnvkit.py batch" pipeline
+#This script is to only annotate .cnr files previously generated using the batch method and rerun the tail end of the pipeline
+#Download refFlat.txt from the UCSC Genome Browser for your specific organism
+#For this to work, my previously created .cnr file from doing cnvkit.py batch needed to have the chromosome column altered to match the refFlat.txt file
+#I just added "chr" to the beginning of each chromosome number in the .cnr file
+
+cnv_annotate.py -o AnnotatedSample.cnr /mnt/scratch/broekerc/Myc_Sequencing/Myc/refFlat.txt Sample.cnr
+
+cnvkit.py segment AnnotatedSample.cnr -o AnnotatedSample.cns
+
+cnvkit.py segmetrics AnnotatedSample.cnr -s AnnotatedSample.cns --ci --alpha 0.5 --smooth-bootstrap -o AnnotatedSample.segmetrics.cns.tmp
+
+cnvkit.py call AnnotatedSample.segmetrics.cns.tmp --method none --filter ci -o AnnotatedSample.call.cns.tmp
+
+cnvkit.py segmetrics AnnotatedSample.cnr -s AnnotatedSample.call.cns.tmp --t-test -o AnnotatedSample.segmetrics.cns.tmp2
+
+cnvkit.py call AnnotatedSample.segmetrics.cns.tmp2 --center median -o AnnotatedSample.call.cns
+
+cnvkit.py bintest AnnotatedSample.cnr -s AnnotatedSample.call.cns.tmp --target -o AnnotatedSample.bintest.cns
