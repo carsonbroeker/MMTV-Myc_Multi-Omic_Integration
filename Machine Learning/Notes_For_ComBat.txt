@@ -1,0 +1,11 @@
+Properly format your GCT files: https://www.genepattern.org/file-formats-guide#GCT
+
+Data should be normalized beforehand.
+
+Make sure the description column (second column) is either absent or contains strings and not integers or floats.
+
+There should also be no spaces in your file as that will throw off the algorithm.
+
+You may get an error called "Error in solve.default(t(design) %*% design) : system is computationally singular". This means some of the values are so close to zero (e.g. 2.0e-18) or that the matrix is not invertible (i.e. your columns are linearly dependent). Try removing features (i.e. genes) that are extremely highly correlated.
+
+Ultimately I was not able to use the cloud version of ComBat hosted on GenePattern and needed to implement the R package locally.
