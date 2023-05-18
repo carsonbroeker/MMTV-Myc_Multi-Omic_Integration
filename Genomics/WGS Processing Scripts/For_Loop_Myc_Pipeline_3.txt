@@ -1,0 +1,58 @@
+#!/bin/bash
+
+
+for variable in TA39_927 TA41_1938 WT13_1356 WT13_1445 WT13_1576 WT13_842 WT13_864 WT21_1066 WT21_222
+do
+
+
+rm $variable'_WGS_Pipeline_3.sh'
+
+
+echo "#!/bin/bash --login
+#SBATCH --time=32:00:00            
+#SBATCH --ntasks=10              
+#SBATCH --cpus-per-task=2     
+#SBATCH --mem=50G                  
+#SBATCH --job-name $variable'_Pipeline_3' 
+#SBATCH --mail-user=broekerc@msu.edu
+#SBATCH --mail-type=FAIL,BEGIN,END
+
+
+cd /mnt/scratch/broekerc/Myc/$variable
+
+module purge
+module load GCC/6.4.0-2.28 OpenMPI/2.1.1
+module load BWA/0.7.17
+module load Java
+module load picard
+module load SAMtools
+
+#####Align
+
+gunzip $variable'TrimmedForwardPaired.fastq.gz'
+gunzip $variable'TrimmedReversePaired.fastq.gz'
+
+bwa mem -M -P -t19 /mnt/gs21/scratch/broekerc/Mus_musculus/Mus_musculus.GRCm38.dna_sm.primary_assembly.fa \
+$variable'TrimmedForwardPaired.fastq' \
+$variable'TrimmedReversePaired.fastq' > $variable'Aligned.bam'
+
+##### AddReadGroup
+
+java -jar /opt/software/picard/2.18.1-Java-1.8.0_152/picard.jar AddOrReplaceReadGroups \
+      I=$variable'Aligned.bam' \
+      O=$variable'AlignedAddedRG.bam' \
+      RGID=$variable \
+      RGLB=lib1 \
+      RGPL=ILLUMINA \
+      RGPU=unit1 \
+      RGSM=$variable'AlignedAddedreadgroupSorted'
+
+########## VERY IMPORTANT! the RGSM= line is the $variable name that goes into the header of the bam file.  This line needs to be known
+########## and exact for certain downstream processes such as GATK (especially mutect).
+
+" > $variable'_WGS_Pipeline_3.sh'
+
+
+sbatch $variable'_WGS_Pipeline_3.sh'
+
+done

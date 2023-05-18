@@ -1,0 +1,38 @@
+#!/bin/bash
+
+
+for variable in TA39_927 TA41_1938 WT13_1356 WT13_1445 WT13_1576 WT13_842 WT13_864 WT21_1066 WT21_222
+do
+
+
+rm $variable'_WGS_Pipeline_Varscan.sh'
+
+
+echo "#!/bin/bash --login
+#SBATCH --time=72:00:00            
+#SBATCH --ntasks=1              
+#SBATCH --cpus-per-task=1     
+#SBATCH --mem=50G                  
+#SBATCH --job-name $variable'_Pipeline_Varscan' 
+#SBATCH --mail-user=broekerc@msu.edu
+#SBATCH --mail-type=FAIL,BEGIN,END
+
+cd /mnt/gs21/scratch/broekerc/Myc/$variable
+
+module load VarScan/2.4.1-Java-1.8.0_92
+module load samtools
+
+samtools mpileup -q 1 -f /mnt/gs21/scratch/broekerc/Mus_musculus/Mus_musculus.GRCm38.dna_sm.primary_assembly.fa -A -B $variable'AlignedAddedreadgroupSortedDuprm.bam' -o tumorpileup
+samtools mpileup -q 1 -f /mnt/gs21/scratch/broekerc/Mus_musculus/Mus_musculus.GRCm38.dna_sm.primary_assembly.fa -A -B /mnt/gs21/scratch/broekerc/FVB_NJ/FVB_NJAlignedAddedreadgroupSortedDuprm.bam -o normalpileup
+
+java -jar /opt/software/VarScan/2.4.1-Java-1.8.0_92/VarScan.v2.4.1.jar somatic normalpileup tumorpileup $variable'VarscanSNVs.vcf'
+
+" > $variable'_WGS_Pipeline_Varscan.sh'
+
+
+sbatch $variable'_WGS_Pipeline_Varscan.sh'
+
+done
+
+
+

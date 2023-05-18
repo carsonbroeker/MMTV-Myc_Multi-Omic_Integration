@@ -1,0 +1,50 @@
+#!/bin/bash
+
+
+for variable in TA39_927 TA41_1938 WT13_1356 WT13_1445 WT13_1576 WT13_842 WT13_864 WT21_1066 WT21_222
+do
+
+
+rm $variable'_WGS_Pipeline_Lumpy.sh'
+
+
+echo "#!/bin/bash --login
+#SBATCH --time=15:00:00            
+#SBATCH --ntasks=1              
+#SBATCH --cpus-per-task=1     
+#SBATCH --mem=25G                  
+#SBATCH --constraint='[intel16|intel18]'
+#SBATCH --job-name $variable'_Pipeline_Lumpy' 
+#SBATCH --mail-user=broekerc@msu.edu
+#SBATCH --mail-type=FAIL,BEGIN,END
+
+
+module load GCC/5.4.0-2.26  OpenMPI/1.10.3-CUDA
+module load Python/2.7.10
+module load SAMtools/1.8
+
+cd /mnt/gs21/scratch/broekerc/Myc/$variable
+
+/mnt/ufs18/home-118/broekerc/lumpy-sv/bin/lumpyexpress -g \
+	-B $variable'AlignedAddedreadgroupSortedDuprm.bam',/mnt/gs21/scratch/broekerc/FVB_NJ/FVB_NJAlignedAddedreadgroupSortedDuprm.bam \
+	-S $variable'AlignedAddedreadgroupSortedDuprm.splitters.bam',/mnt/gs21/scratch/broekerc/FVB_NJ/FVB_NJAlignedAddedreadgroupSortedDuprm.splitters.bam \
+	-D $variable'AlignedAddedreadgroupSortedDuprm.discordants.bam',/mnt/gs21/scratch/broekerc/FVB_NJ/FVB_NJAlignedAddedreadgroupSortedDuprm.discordants.bam \
+	-o $variable'Lumpy.vcf'
+
+
+#####Lumpy must be run with Python 2.7.  After you install lumpy, the locations of python and samtools must be set within the lumpyexpress.config file
+#####is located in the lumpy-sv folder.  PYSAM and NUMPY must be installed for Python, and the folder for the correct python location is below
+##### SAMTOOLS=/opt/software/SAMtools/1.8-foss-2016b/bin/samtools
+##### PYTHON=/opt/software/Python/2.7.10-foss-2016b/bin/python
+
+##### After running lumpy, SVtyper must be ran on the lumpy output. 
+
+" > $variable'_WGS_Pipeline_Lumpy.sh'
+
+
+sbatch $variable'_WGS_Pipeline_Lumpy.sh'
+
+done
+
+
+

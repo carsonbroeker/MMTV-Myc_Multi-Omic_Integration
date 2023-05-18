@@ -1,0 +1,75 @@
+#!/bin/bash
+
+
+for variable in TA39_927 TA41_1938 WT13_1356 WT13_1445 WT13_1576 WT13_842 WT13_864 WT21_1066 WT21_222
+do
+
+
+rm $variable'_WGS_Pipeline_4.sh'
+
+
+echo "#!/bin/bash --login
+#SBATCH --time=32:00:00            
+#SBATCH --ntasks=6              
+#SBATCH --cpus-per-task=2     
+#SBATCH --mem=100G                  
+#SBATCH --job-name $variable'_Pipeline_4' 
+#SBATCH --mail-user=broekerc@msu.edu
+#SBATCH --mail-type=FAIL,BEGIN,END
+
+
+cd /mnt/scratch/broekerc/Myc/$variable
+
+module purge
+module load GCC/6.4.0-2.28 OpenMPI/2.1.1
+module load Java
+module load picard
+module load SAMtools
+
+
+##### Sort
+
+samtools sort -@ 19 -o $variable'AlignedAddedreadgroupSorted.bam' $variable'AlignedAddedRG.bam'
+
+##### Mark Duplicates
+
+java -jar /opt/software/picard/2.18.1-Java-1.8.0_152/picard.jar MarkDuplicates \
+      I= $variable'AlignedAddedreadgroupSorted.bam' \
+      O= $variable'AlignedAddedreadgroupSortedDuprm.bam' \
+      M= $variable'Marked_dup_metrics.txt'
+
+##### Create mapped and unmapped reads files
+
+samtools view -b -f 4 $variable'AlignedAddedreadgroupSortedDuprm.bam' > $variable'UnmappedAlignedAddedreadgroupSortedDuprm.bam'
+
+samtools view -b -F 4 $variable'AlignedAddedreadgroupSortedDuprm.bam' > $variable'MappedAlignedAddedreadgroupSortedDuprm.bam'
+
+##### Index
+
+samtools index $variable'AlignedAddedreadgroupSortedDuprm.bam'
+
+samtools index $variable'UnmappedAlignedAddedreadgroupSortedDuprm.bam'
+
+samtools index $variable'MappedAlignedAddedreadgroupSortedDuprm.bam'
+
+##### Create and sort discordant file
+samtools view -@ 7 -b -F 1294 $variable'AlignedAddedreadgroupSortedDuprm.bam' > $variable'.discordants.unsorted.bam'
+
+samtools sort -@ 7 -o $variable'AlignedAddedreadgroupSortedDuprm.discordants.bam' $variable'.discordants.unsorted.bam'
+
+
+##### Create and sort splitter file
+samtools view -@ 7 -h $variable'AlignedAddedreadgroupSortedDuprm.bam' \
+    | /mnt/ufs18/home-118/broekerc/lumpy-sv/scripts/extractSplitReads_BwaMem -i stdin \
+    | samtools view -Sb - \
+    > $variable'.splitters.unsorted.bam'
+
+samtools sort -@7 -o $variable'AlignedAddedreadgroupSortedDuprm.splitters.bam' $variable'.splitters.unsorted.bam'
+
+
+" > $variable'_WGS_Pipeline_4.sh'
+
+
+sbatch $variable'_WGS_Pipeline_4.sh'
+
+done

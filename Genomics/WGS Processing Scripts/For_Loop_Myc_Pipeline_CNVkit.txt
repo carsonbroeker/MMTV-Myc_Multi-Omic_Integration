@@ -1,0 +1,36 @@
+#!/bin/bash
+
+
+for variable in TA39_927 TA41_1938 WT13_1356 WT13_1445 WT13_1576 WT13_842 WT13_864 WT21_1066 WT21_222
+do
+
+
+rm $variable'_WGS_Pipeline_CNVkit.sh'
+
+
+echo "#!/bin/bash --login
+#SBATCH --time=24:00:00            
+#SBATCH --ntasks=1              
+#SBATCH --cpus-per-task=1     
+#SBATCH --mem=50G                  
+#SBATCH --job-name $variable'_Pipeline_CNVkit' 
+#SBATCH --mail-user=broekerc@msu.edu
+#SBATCH --mail-type=FAIL,BEGIN,END
+
+source activate cnvkit
+
+cd /mnt/scratch/broekerc/Myc/$variable
+
+cnvkit.py batch $variable'AlignedAddedreadgroupSortedDuprm.bam' -n /mnt/scratch/broekerc/FVB_NJ/FVB_NJAlignedAddedreadgroupSortedDuprm.bam \
+-m wgs -f /mnt/scratch/broekerc/Mus_musculus/Mus_musculus.GRCm38.dna_sm.primary_assembly.fa
+
+
+" > $variable'_WGS_Pipeline_CNVkit.sh'
+
+
+sbatch $variable'_WGS_Pipeline_CNVkit.sh'
+
+done
+
+
+

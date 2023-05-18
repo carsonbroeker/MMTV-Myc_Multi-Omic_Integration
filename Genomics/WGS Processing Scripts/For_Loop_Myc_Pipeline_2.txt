@@ -1,0 +1,47 @@
+#!/bin/bash
+
+
+for variable in TA39_927 TA41_1938 WT13_1356 WT13_1445 WT13_1576 WT13_842 WT13_864 WT21_1066 WT21_222
+do
+
+
+rm $variable'_WGS_Pipeline_2.sh'
+
+
+echo "#!/bin/bash --login
+#SBATCH --time=24:00:00            
+#SBATCH --ntasks=10              
+#SBATCH --cpus-per-task=2     
+#SBATCH --mem=25G                  
+#SBATCH --job-name $variable'_Pipeline_2' 
+#SBATCH --mail-user=broekerc@msu.edu
+#SBATCH --mail-type=FAIL,BEGIN,END
+
+
+cd /mnt/scratch/broekerc/Myc/$variable
+
+module load Trimmomatic/0.38-Java-1.8.0_162
+
+
+java -jar \$EBROOTTRIMMOMATIC/trimmomatic-0.38.jar PE -threads 19 \
+$variable'CombinedR1PreAligned.fastq.gz' \
+$variable'CombinedR2PreAligned.fastq.gz' \
+$variable'TrimmedForwardPaired.fastq.gz' \
+$variable'TrimmedForwardUnpaired.fastq.gz' \
+$variable'TrimmedReversePaired.fastq.gz' \
+$variable'TrimmedReverseUnpaired.fastq.gz' \
+ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:15 TRAILING:15 SLIDINGWINDOW:4:15 MINLEN:25
+
+
+module load FastQC
+
+fastqc $variable'TrimmedForwardPaired.fastq.gz'
+fastqc $variable'TrimmedForwardUnpaired.fastq.gz'
+fastqc $variable'TrimmedReversePaired.fastq.gz'
+fastqc $variable'TrimmedReverseUnpaired.fastq.gz'
+" > $variable'_WGS_Pipeline_2.sh'
+
+
+sbatch $variable'_WGS_Pipeline_2.sh'
+
+done

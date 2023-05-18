@@ -1,0 +1,43 @@
+#!/bin/bash
+
+
+for variable in TA39_927 TA41_1938 WT13_1356 WT13_1445 WT13_1576 WT13_842 WT13_864 WT21_1066 WT21_222
+do
+
+
+rm $variable'_WGS_Pipeline_1.sh'
+
+
+echo "#!/bin/bash --login
+#SBATCH --time=24:00:00             # limit of wall clock time - how long the job will run (same as $
+#SBATCH --ntasks=1                  # number of tasks - how many tasks (nodes) that you require (sam$
+#SBATCH --cpus-per-task=1           # number of CPUs (or cores) per task (same as -c)
+#SBATCH --mem=25G                    # memory required per node - amount of memory (in bytes)
+#SBATCH --job-name $variable'_Pipeline_1'        # you can give your job a name for easier identific$
+#SBATCH --mail-user=broekerc@msu.edu
+#SBATCH --mail-type=FAIL,BEGIN,END
+
+
+cd /mnt/scratch/broekerc/Myc/$variable
+
+
+
+gunzip *.gz
+cat *_R1_* > $variable'CombinedR1PreAligned.fastq'
+cat *_R2_* > $variable'CombinedR2PreAligned.fastq'
+gzip $variable'CombinedR1PreAligned.fastq'
+gzip $variable'CombinedR2PreAligned.fastq'
+
+
+cd /mnt/scratch/broekerc/Myc/$variable
+
+module load FastQC/0.11.7-Java-1.8.0_162
+
+fastqc $variable'CombinedR1PreAligned.fastq.gz'
+fastqc $variable'CombinedR2PreAligned.fastq.gz'
+" > $variable'_WGS_Pipeline_1.sh'
+
+
+sbatch $variable'_WGS_Pipeline_1.sh'
+
+done

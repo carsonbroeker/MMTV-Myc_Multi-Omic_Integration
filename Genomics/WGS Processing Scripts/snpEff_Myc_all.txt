@@ -1,0 +1,28 @@
+#!/bin/bash --login
+#SBATCH --time=10:00:00             # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --ntasks=1                  # number of tasks - how many tasks (nodes) that you require (same as -n)
+#SBATCH --cpus-per-task=1           # number of CPUs (or cores) per task (same as -c)
+#SBATCH --mem=25G                    # memory required per node - amount of memory (in bytes)
+#SBATCH --job-name snpEff_Myc_All             # you can give your job a name for easier identification (same as -J)
+#SBATCH --mail-user=broekerc@msu.edu
+#SBATCH --mail-type=FAIL,BEGIN,END
+
+cd /mnt/home/broekerc/snpEff
+module load java
+
+for num in TA39_927 TA41_1938 WT13_1356 WT13_1445 WT13_1576 WT13_842 WT13_864 WT21_1066 WT21_222
+do
+
+        for variable in Delly Lumpy Mutect2
+        do
+
+        java -Xmx4g -jar /mnt/home/broekerc/snpEff/snpEff.jar \
+                mm10 \
+                '/mnt/scratch/broekerc/Myc_Sequencing/Myc/'$num'/'$num''$variable'.vcf' > '/mnt/scratch/broekerc/Myc_Sequencing/Myc/'$num'/'$num''$variable'Annotated.vcf'
+
+        done
+
+done
+
+scontrol show job $SLURM_JOB_ID     ### write job information to output file
+

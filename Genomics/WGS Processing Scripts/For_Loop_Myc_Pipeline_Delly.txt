@@ -1,0 +1,45 @@
+#!/bin/bash
+
+
+for variable in TA39_927 TA41_1938 WT13_1356 WT13_1445 WT13_1576 WT13_842 WT13_864 WT21_1066 WT21_222
+do
+
+
+rm $variable'_WGS_Pipeline_Delly.sh'
+
+
+echo "#!/bin/bash --login
+#SBATCH --time=48:00:00            
+#SBATCH --ntasks=2              
+#SBATCH --cpus-per-task=2     
+#SBATCH --mem=300G                  
+#SBATCH --job-name $variable'_Pipeline_Delly' 
+#SBATCH --mail-user=broekerc@msu.edu
+#SBATCH --mail-type=FAIL,BEGIN,END
+
+
+module load Delly/0.7.8
+
+cd /mnt/scratch/broekerc/Myc/$variable
+
+delly call -n \
+-o $variable'Delly.bcf' \
+-g /mnt/scratch/broekerc/Mus_musculus/Mus_musculus.GRCm38.dna_sm.primary_assembly.fa \
+$variable'AlignedAddedreadgroupSortedDuprm.bam' \
+/mnt/scratch/broekerc/FVB_NJ/FVB_NJAlignedAddedreadgroupSortedDuprm.bam
+
+module load GCC/6.4.0-2.28  OpenMPI/2.1.2-CUDA
+module load bcftools/1.9.64
+module load Delly/0.7.8
+
+bcftools view $variable'Delly.bcf' > $variable'Delly.vcf'
+
+" > $variable'_WGS_Pipeline_Delly.sh'
+
+
+sbatch $variable'_WGS_Pipeline_Delly.sh'
+
+done
+
+
+

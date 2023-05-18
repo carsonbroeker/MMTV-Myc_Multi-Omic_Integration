@@ -1,0 +1,7 @@
+C to A = 1613
+C to G = 1323
+C to T = 3092
+T to A = 1315
+T to C = 4102
+T to G = 5914
+Total = 17359

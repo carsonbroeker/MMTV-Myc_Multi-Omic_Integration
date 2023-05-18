@@ -1,0 +1,42 @@
+#!/bin/bash
+
+
+for variable in TA39_927 TA41_1938 WT13_1356 WT13_1445 WT13_1576 WT13_842 WT13_864 WT21_1066 WT21_222
+do
+
+
+rm $variable'_WGS_Pipeline_Mutect2.sh'
+
+
+echo "#!/bin/bash --login
+#SBATCH --time=48:00:00            
+#SBATCH --ntasks=10              
+#SBATCH --cpus-per-task=2     
+#SBATCH --mem=50G                  
+#SBATCH --job-name $variable'_Pipeline_Mutect2' 
+#SBATCH --mail-user=broekerc@msu.edu
+#SBATCH --mail-type=FAIL,BEGIN,END
+
+cd /mnt/gs21/scratch/broekerc/Myc/$variable
+
+module load java
+module load GCC/6.4.0-2.28  OpenMPI/2.1.2-CUDA
+module load GATK/4.0.5.1-Python-3.6.4
+
+gatk Mutect2 \
+	-R /mnt/gs21/scratch/broekerc/Mus_musculus/Mus_musculus.GRCm38.dna_sm.primary_assembly.fa \
+	-I $variable'AlignedAddedreadgroupSortedDuprm.bam' \
+	-I /mnt/gs21/scratch/broekerc/FVB_NJ/FVB_NJAlignedAddedreadgroupSortedDuprm.bam \
+	-tumor $variable'AlignedAddedreadgroupSorted' \
+	-normal FVB_NJ \
+	-O $variable'Mutect2.vcf'
+
+" > $variable'_WGS_Pipeline_Mutect2.sh'
+
+
+sbatch $variable'_WGS_Pipeline_Mutect2.sh'
+
+done
+
+
+

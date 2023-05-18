@@ -1,0 +1,7 @@
+C to A = 1986
+C to G = 1301
+C to T = 3312
+T to A = 1291
+T to C = 3654
+T to G = 5144
+Total = 16688
